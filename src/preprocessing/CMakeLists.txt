@@ -4,6 +4,7 @@ add_executable(nalu_preprocess
   NDTW2D.cpp
   SamplingPlanes.cpp
   ABLFields.cpp
+  CouetteFields.cpp
   ChannelFields.cpp
   HITFields.cpp
   RotateMesh.cpp
