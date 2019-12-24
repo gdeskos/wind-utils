@@ -122,6 +122,9 @@ private:
     //! Skin friction Reynolds number
     double Re_tau_;
 
+		//! Reference velocity at top wall
+		double U0_;
+
     //! Skin friction velocity
     double utau_;
 
@@ -141,16 +144,16 @@ private:
     const int k_pert_v_ = 16;
 
     //! Amplitude of sinusoidal perturbation for u
-    const int a_pert_u_ = 10;
+    const int a_pert_u_ = 5;
 
     //! Amplitude of sinusoidal perturbation for w
-    const int a_pert_v_ = 10;
+    const int a_pert_v_ = 5;
 
     //! Amplitude of random perturbation for u
-    const double a_rand_u_ = 5;
+    const double a_rand_u_ = 2.5;
 
     //! Amplitude of random perturbation for w
-    const double a_rand_v_ = 5;
+    const double a_rand_v_ = 2.5;
 };
 
 }

@@ -36,7 +36,8 @@ CouetteFields::CouetteFields(
     height_(0.0),
     C_(0.0),
     Re_tau_(0.0),
-    viscosity_(0.0)
+    viscosity_(0.0),
+		U0_(0.0)
 {
     load(node);
     srand(seed_);
@@ -108,6 +109,11 @@ void CouetteFields::load_velocity_info(const YAML::Node& couette)
   else
     throw std::runtime_error("CouetteFields: missing mandatory Re_tau parameter");
 
+  if (couette["U0"])
+    U0_ = couette["U0"].as<double>();
+  else
+    throw std::runtime_error("CouetteFields: missing mandatory U0 parameter");
+
   if (couette["viscosity"])
     viscosity_ = couette["viscosity"].as<double>();
   else
@@ -136,12 +142,13 @@ double CouetteFields::umean(const double z)
 		const double zphalf=height_*0.5*utau_/viscosity_;
     double umean=(1.0/kappa_ * log(1.0 + kappa_ * zp)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- zp / 11.0) - zp / 11.0 * exp(- zp / 3));
     const double umeanmax=(1.0/kappa_ * log(1.0 + kappa_ * zphalf)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- zphalf / 11.0) - zphalf / 11.0 * exp(- zphalf / 3));
-    if(z>height_/2.) {
-		return 2*umeanmax-umean;
-		}
-		else{
-		return umean;
-	  }
+    //if(z>height_/2.) {
+		//return 2*umeanmax-umean;
+		//}
+		//else{
+		//return umean;
+	  //}
+		return z/height_*U0_;
 }
 
 double CouetteFields::u_perturbation(const double x, const double y, const double )
@@ -182,8 +189,8 @@ void CouetteFields::init_velocity_field()
 	  const double pert_u = u_perturbation(x,y,z);
 	  const double pert_v = v_perturbation(x,y,z);
 
-	  vel[in * ndim_ + 0] = utau_ * (umean(z) + pert_u);
-	  vel[in * ndim_ + 1] = utau_ * pert_v;
+	  vel[in * ndim_ + 0] = umean(z) + utau_*pert_u;
+	  vel[in * ndim_ + 1] = utau_*pert_v;
 	  vel[in * ndim_ + 2] = 0.0;
         }
     }
