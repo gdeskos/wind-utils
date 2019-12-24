@@ -16,6 +16,7 @@ Task type                  Description
 ``create_bdy_io_mesh``     Create an I/O transfer mesh for sampling inflow planes
 ``mesh_local_refinement``  Local refinement around turbines for wind farm simulations
 ``rotate_mesh``            Rotate mesh
+``move_mesh``              Translate mesh by a given offset vector
 =========================  ===========================================================
 
 .. warning::
@@ -30,7 +31,7 @@ a **nalu_preprocess** section as shown below. Input options for the individual
 tasks are provided as sub-sections within **nalu_preprocess** with the
 corresponding task names provided under ``tasks``. For example, in the sample
 shown below, the program will expect to see two sub-sections, namely
-``init_abl_fields`` and ``generate_planes`` based on the list of tasks shown in
+``init_abl_fields`` and ``rotate_mesh`` based on the list of tasks shown in
 lines 22-23.
 
 .. literalinclude:: files/nalu_preprocess.yaml
@@ -98,7 +99,7 @@ Common input file options
 
       tasks:
         - rotate_mesh_ccw  # Rotate mesh such that sides align with XYZ axes
-        - generate_planes  # Generate sampling planes using bounding box
+        - move_mesh
         - rotate_mesh_cw   # Rotate mesh back to the original orientation
 
       rotate_mesh_ccw:
@@ -109,6 +110,12 @@ Common input file options
         angle: 30.0
         origin: [500.0, 0.0, 0.0]
         axis: [0.0, 0.0, 1.0]
+
+      move_mesh:
+        mesh_parts:
+          - fluid_part
+
+        offset_vector: [10.0, 10.0, 0.0]
 
       rotate_mesh_cw:
         task_type: rotate_mesh
@@ -403,6 +410,33 @@ parallel MPI run.
    A list of boundary parts that are saved in the I/O mesh. The names in the
    list must correspond to the names of the sidesets in the given ABL mesh.
 
+``move_mesh``
+--------------
+
+Translates a mesh in space by a given offset vector.
+
+.. confval:: mesh_parts
+
+   List of element block names that must be translated
+
+.. confval:: offset_vector
+
+   A 3-D vector that specifies the translation in space.
+
+.. code-block:: yaml
+
+   nalu_preprocess:
+     input_db: abl_1x1x1_10.exo
+     output_db: move_mesh.g
+
+     tasks:
+       - move_mesh
+
+     move_mesh:
+       mesh_parts:
+         - fluid
+
+       offset_vector: [10.0, 10.0, 0.0]
 
 ``rotate_mesh``
 ---------------

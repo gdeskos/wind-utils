@@ -12,3 +12,5 @@ User Manual
    nalu_postprocess
    wrftonalu
    abl_mesh
+   slice_mesh
+   tools/boxturb

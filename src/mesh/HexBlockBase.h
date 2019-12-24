@@ -19,6 +19,7 @@
 #include "core/CFDMesh.h"
 #include "core/YamlUtils.h"
 #include "core/ClassRegistry.h"
+#include "struct_grid/StructGrid.h"
 
 #include <vector>
 
@@ -83,15 +84,15 @@ protected:
     virtual void generate_elements();
 
     //! Generate the xmin and xmax sidesets
-    virtual void generate_x_boundary(const std::vector<stk::mesh::EntityId> &,
+    virtual void generate_x_boundary(const std::vector<stk::mesh::Entity> &,
                                      const SideIDType);
 
     //! Generate the ymin and ymax sidesets
-    virtual void generate_y_boundary(const std::vector<stk::mesh::EntityId> &,
+    virtual void generate_y_boundary(const std::vector<stk::mesh::Entity> &,
                                      const SideIDType);
 
     //! Generate the zmin and zmax sidesets
-    virtual void generate_z_boundary(const std::vector<stk::mesh::EntityId> &,
+    virtual void generate_z_boundary(const std::vector<stk::mesh::Entity> &,
                                      const SideIDType);
     //! Generate coordinates
     virtual void generate_coordinates(const std::vector<stk::mesh::EntityId>&) = 0;
@@ -104,11 +105,23 @@ protected:
      */
     virtual void get_sideset_info(const SideIDType, int&, std::string&, unsigned&);
 
+    virtual void add_node_sharing(
+        const std::vector<stk::mesh::Entity>&, const unsigned, const int);
+
     //! STK Metadata object
     stk::mesh::MetaData& meta_;
 
     //! STK Bulkdata object
     stk::mesh::BulkData& bulk_;
+
+    //! Block information in parallel runs
+    StructGrid elemGrid_;
+
+    StructBox nodeBlock_;
+
+    stk::mesh::EntityId nodeIDStart_{1};
+
+    stk::mesh::EntityId elemIDStart_{1};
 
     //! Mesh dimensions in each direction
     std::vector<int> meshDims_;
