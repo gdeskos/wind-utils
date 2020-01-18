@@ -30,6 +30,7 @@ CouetteFields::CouetteFields(
     fluid_parts_(0),
     ndim_(meta_.spatial_dimension()),
     doVelocity_(false),
+    doTemperature_(false),
     doTKE_(false),
     length_(0.0),
     width_(0.0),
@@ -37,7 +38,9 @@ CouetteFields::CouetteFields(
     C_(0.0),
     Re_tau_(0.0),
     viscosity_(0.0),
-		U0_(0.0)
+		U0_(0.0),
+    Ri_(0.0),
+    T0_(0.0)
 {
     load(node);
     srand(seed_);
@@ -51,10 +54,10 @@ void CouetteFields::load(const YAML::Node& couette)
         doVelocity_ = true;
         load_velocity_info(couette["velocity"]);
     }
-
-    if (couette["turbulent_ke"].as<bool>()) {
-        doTKE_ = true;
-        load_tke_info(couette["tke"]);
+    
+    if (couette["temperature"]) {
+        doTemperature_ = true;
+        load_temperature_info(couette["temperature"]);
     }
 
     fluid_parts_.resize(fluid_partnames.size());
@@ -80,6 +83,15 @@ void CouetteFields::initialize()
         }
         mesh_.add_output_field("velocity");
     }
+    
+    if (doTemperature_) {
+        ScalarFieldType& temperature = meta_.declare_field<ScalarFieldType>(
+            stk::topology::NODE_RANK, "temperature");
+        for(auto part: fluid_parts_) {
+            stk::mesh::put_field_on_mesh(temperature, *part, nullptr);
+        }
+        mesh_.add_output_field("temperature");
+    }
 
     if (doTKE_) {
         ScalarFieldType& tke = meta_.declare_field<ScalarFieldType>(
@@ -97,6 +109,7 @@ void CouetteFields::run()
         std::cout << "Generating couette fields" << std::endl;
     setup_parameters();
     if (doVelocity_) init_velocity_field();
+    if (doTemperature_) init_temperature_field();
     if (doTKE_) init_tke_field();
 
     mesh_.set_write_flag();
@@ -120,6 +133,22 @@ void CouetteFields::load_velocity_info(const YAML::Node& couette)
     throw std::runtime_error("CouetteFields: missing mandatory viscosity parameter");
 }
 
+void CouetteFields::load_temperature_info(const YAML::Node& couette)
+{
+  if (couette["Ri"]) 
+		Ri_ = couette["Ri"].as<double>();
+	else
+		throw std::runtime_error("CouetteFields: missing mandatory Ri (Bulk Richardson number) parameter");
+  
+  if (couette["T0"])
+    T0_ = couette["T0"].as<double>();
+  else
+    throw std::runtime_error("CouetteFields: missing mandatory T0 (top wall temperature) parameter");
+
+}
+
+
+
 void CouetteFields::load_tke_info(const YAML::Node&)
 {}
 
@@ -138,32 +167,31 @@ void CouetteFields::setup_parameters()
 
 double CouetteFields::umean(const double z)
 {
-    const double zp = std::min(z, height_ - z) * utau_ / viscosity_;
-		const double zphalf=height_*0.5*utau_/viscosity_;
-    double umean=(1.0/kappa_ * log(1.0 + kappa_ * zp)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- zp / 11.0) - zp / 11.0 * exp(- zp / 3));
-    const double umeanmax=(1.0/kappa_ * log(1.0 + kappa_ * zphalf)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- zphalf / 11.0) - zphalf / 11.0 * exp(- zphalf / 3));
-    //if(z>height_/2.) {
-		//return 2*umeanmax-umean;
-		//}
-		//else{
-		//return umean;
-	  //}
 		return z/height_*U0_;
 }
 
-double CouetteFields::u_perturbation(const double x, const double y, const double )
+double CouetteFields::u_perturbation(const double x, const double y, const double z)
 {
-    const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * y) * sin(k_pert_u_ * M_PI / length_ * x);
-    const double rand_u = a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
-    return pert_u * rand_u;
+    //const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * y) * sin(k_pert_u_ * M_PI / length_ * x);
+    const double pert_u = 0.5*epsilon_*length_*std::sin(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double rand_u = 0;//a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_u + rand_u;
 }
 
 double CouetteFields::v_perturbation(const double x, const double y, const double z)
 {
-    const double pert_v = a_pert_v_ * sin(k_pert_v_ * M_PI / length_ * x)  * sin(k_pert_v_ * M_PI / width_ * y);
-    const double rand_v = a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
-    return pert_v * rand_v;
+    const double pert_v = -0.5*epsilon_*width_*std::cos(2*M_PI/length_*x)*std::sin(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double rand_v = 0.;//a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_v + rand_v;
 }
+
+double CouetteFields::w_perturbation(const double x, const double y, const double z)
+{
+    const double pert_w = 0.;//epsilon_*height_*std::cos(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y);
+    const double rand_w = 0.;//a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_w + rand_w;
+}
+
 
 void CouetteFields::init_velocity_field()
 {
@@ -188,13 +216,42 @@ void CouetteFields::init_velocity_field()
 
 	  const double pert_u = u_perturbation(x,y,z);
 	  const double pert_v = v_perturbation(x,y,z);
+	  const double pert_w = w_perturbation(x,y,z);
 
-	  vel[in * ndim_ + 0] = umean(z) + utau_*pert_u;
-	  vel[in * ndim_ + 1] = utau_*pert_v;
-	  vel[in * ndim_ + 2] = 0.0;
+	  vel[in * ndim_ + 0] = umean(z)+pert_u;
+	  vel[in * ndim_ + 1] = pert_v;
+	  vel[in * ndim_ + 2] = pert_w;
         }
     }
 }
+
+void CouetteFields::init_temperature_field()
+{
+    stk::mesh::Selector fluid_union = stk::mesh::selectUnion(fluid_parts_);
+    const stk::mesh::BucketVector& fluid_bkts = bulk_.get_buckets(
+        stk::topology::NODE_RANK, fluid_union);
+
+    VectorFieldType* coords = meta_.get_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "coordinates");
+    ScalarFieldType* temperature = meta_.get_field<ScalarFieldType>(
+        stk::topology::NODE_RANK, "temperature");
+    
+		for(size_t ib=0; ib < fluid_bkts.size(); ib++) {
+        stk::mesh::Bucket& fbkt = *fluid_bkts[ib];
+        double* xyz = stk::mesh::field_data(*coords, fbkt);
+    	double* temperature_tmp = stk::mesh::field_data(*temperature, fbkt);
+
+			double g=9.81;
+
+        for (size_t in=0; in < fbkt.size(); in++) {
+    	  const double z = xyz[in*ndim_ + 2];
+
+	  		temperature_tmp[in] = T0_ - Ri_*T0_*(height_-z)/g;
+        }
+    }
+
+}
+
 
 void CouetteFields::init_tke_field()
 {

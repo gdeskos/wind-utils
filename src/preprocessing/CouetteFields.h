@@ -48,6 +48,7 @@ public:
     template<typename T>
     using Array2D = std::vector<std::vector<T>>;
 
+
     CouetteFields(CFDMesh&, const YAML::Node&);
 
     virtual ~CouetteFields() {}
@@ -68,23 +69,33 @@ private:
     //! Helper function to parse and initialize velocity inputs
     void load_velocity_info(const YAML::Node&);
 
+    //! Helper function to parse and initialize temperature inputs
+    void load_temperature_info(const YAML::Node&);
+
     //! Helper function to parse and initialize tke inputs
     void load_tke_info(const YAML::Node&);
 
     //! Helper function to setup the channel flow parameters
+
     void setup_parameters();
 
     //! umean with a Reichardt-like function
-    double umean(const double y);
+    double umean(const double z);
 
     //! Perturbation function for u
     double u_perturbation(const double x, const double y, const double z);
 
-    //! Perturbation function for w
+    //! Perturbation function for v
     double v_perturbation(const double x, const double y, const double z);
+    
+    //! Perturbation function for w
+    double w_perturbation(const double x, const double y, const double z);
 
     //! Initialize the velocity field through linear interpolation
     void init_velocity_field();
+    
+    //! Initialize the velocity field through linear interpolation
+    void init_temperature_field();
 
     //! Initialize the tke field through linear interpolation
     void init_tke_field();
@@ -103,6 +114,9 @@ private:
 
     //! Flag indicating whether velocity is initialized
     bool doVelocity_;
+    
+    //! Flag indicating whether temperature is initialized
+    bool doTemperature_;
 
     //! Flag indicating whether turbulent kinetic energy is initialized
     bool doTKE_;
@@ -125,6 +139,12 @@ private:
 		//! Reference velocity at top wall
 		double U0_;
 
+    //! Reference temperature at top wall
+		double T0_;
+
+		//! Reference Richardson number 
+		double Ri_;
+
     //! Skin friction velocity
     double utau_;
 
@@ -137,6 +157,9 @@ private:
     //! Seed for RNG
     const int seed_ = 2864;
 
+		//! Some parameters for the initial perturbations
+    const double epsilon_=0.1;
+  
     //! Wavenumber of sinusoidal perturbation for u
     const int k_pert_u_ = 16;
 
