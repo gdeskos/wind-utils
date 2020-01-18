@@ -74,6 +74,7 @@ void ABLStatistics::load(const YAML::Node& node)
     zmax_ = htnode["max_height"].as<double>();
     dz_ = htnode["delta_height"].as<double>();
 
+		
     nheights_ = static_cast<int>((zmax_ - zmin_) / dz_) + 1;
     heights_.resize(nheights_);
     for (int i=0; i < nheights_; i++)

@@ -99,7 +99,13 @@ private:
 
     //! Constant spacing in the vertical direction for the ABL mesh
     double dz_;
-
+    
+    //! Constant stretching factor
+    double fac_{1.0};
+ 
+    //! Spacing vector used in stretched meshes
+		std::vector<double> zp_;
+     
     //! Total number of heights where data is sampled and averaged
     int nheights_;
 
