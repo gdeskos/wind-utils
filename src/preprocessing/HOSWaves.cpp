@@ -106,14 +106,14 @@ void HOSWaves::run()
         [&](int) {
             for (int itime=0; itime<int(numSteps_);itime++){
                 
-                time=itime;
                 std::string file_tmp=waves_filename_+"_"+std::to_string(itime+1)+".dat";
                 std::cerr<<file_tmp<<std::endl;
                 std::ifstream waves(file_tmp, std::ios::in);
                 if (!waves.is_open())
                     throw std::runtime_error(
                     "HOSWaves:: Error opening file: " + waves_filename_);
-                 
+                waves >> time; 
+                std::cerr<<time<<std::endl;
                 for (auto b: bkts) {
                     for (auto node: *b) {
                     double* disp = stk::mesh::field_data(*mesh_displacement, node);
