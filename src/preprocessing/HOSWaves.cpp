@@ -98,32 +98,37 @@ void HOSWaves::run()
     auto* mesh_velocity = meta.get_field<VectorFieldType>(
         stk::topology::NODE_RANK, "mesh_velocity");
     
-    std::ifstream waves(waves_filename_, std::ios::in);
-    if (!waves.is_open())
-        throw std::runtime_error(
-            "HOSWaves:: Error opening file: " + waves_filename_);
-
     pinfo.info() << "Writing time-history file = " << output_db_ << std::endl;
     std::set<std::string> outfields{"mesh_displacement","mesh_velocity"};
-    double x,y,eta,phiS;
+    double time, x,y,eta,phiS;
     mesh_.write_timesteps(
         output_db_, numSteps_, outfields,
         [&](int) {
-            waves >> x >> y >> eta >> phiS;
-            for (auto b: bkts) {
-                for (auto node: *b) {
+            for (int itime=0; itime<int(numSteps_);itime++){
+                
+                time=itime;
+                std::string file_tmp=waves_filename_+"_"+std::to_string(itime+1)+".dat";
+                std::cerr<<file_tmp<<std::endl;
+                std::ifstream waves(file_tmp, std::ios::in);
+                if (!waves.is_open())
+                    throw std::runtime_error(
+                    "HOSWaves:: Error opening file: " + waves_filename_);
+                 
+                for (auto b: bkts) {
+                    for (auto node: *b) {
                     double* disp = stk::mesh::field_data(*mesh_displacement, node);
                     double* vel = stk::mesh::field_data(*mesh_velocity, node);
+                    waves >> x >> y >> eta >> phiS;
                     disp[0] = 0.;
                     disp[1] = 0.;
                     disp[2] = eta;
                     vel[0]=0.;
                     vel[1]=0.;
                     vel[2]=0.;
-                    std::cerr<<eta<<std::endl;
+                    }
                 }
             }
-            return 0;
+            return time;
         });
     pinfo.info() << numSteps_ << " timesteps written successfully" << std::endl;
 }
