@@ -12,6 +12,7 @@ add_executable(nalu_preprocess
   NestedRefinement.cpp
   TranslateMesh.cpp
   InflowHistory.cpp
+  HOSWaves.cpp
 
   PreProcessDriver.cpp
   nalu_preprocess.cpp

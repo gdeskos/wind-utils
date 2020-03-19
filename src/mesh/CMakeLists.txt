@@ -28,7 +28,7 @@ add_executable(abl_mesh
   abl_mesh.cpp)
 
 add_executable(slice_mesh
-  Slice.cpp
+  slice.cpp
   slice_mesh.cpp
   )
 
@@ -79,7 +79,7 @@ endif(MPI_LINK_FLAGS)
 #  LIBRARY DESTINATION lib
 #  ARCHIVE DESTINATION lib)
 
-install(TARGETS abl_mesh slice_mesh
+install(TARGETS abl_mesh
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
