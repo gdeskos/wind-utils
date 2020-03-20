@@ -103,9 +103,7 @@ void HOSWaves::run()
     double time, x,y,eta,phiS;
     mesh_.write_timesteps(
         output_db_, numSteps_, outfields,
-        [&](int) {
-            for (int itime=0; itime<int(numSteps_);itime++){
-                
+        [&](int itime) { 
                 std::string file_tmp=waves_filename_+"_"+std::to_string(itime+1)+".dat";
                 std::cerr<<file_tmp<<std::endl;
                 std::ifstream waves(file_tmp, std::ios::in);
@@ -127,7 +125,6 @@ void HOSWaves::run()
                     vel[2]=0.;
                     }
                 }
-            }
             return time;
         });
     pinfo.info() << numSteps_ << " timesteps written successfully" << std::endl;
