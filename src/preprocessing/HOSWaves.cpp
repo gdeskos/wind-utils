@@ -68,15 +68,19 @@ void HOSWaves::initialize()
     auto timeMon = get_stopwatch(timerName);
 
     auto& meta = mesh_.meta();
-    VectorFieldType& mesh_displacement = meta.declare_field<VectorFieldType>(
-        stk::topology::NODE_RANK, "mesh_displacement");
-    VectorFieldType& mesh_velocity = meta.declare_field<VectorFieldType>(
-        stk::topology::NODE_RANK, "mesh_velocity");
+    VectorFieldType& coordinates_bc = meta.declare_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "coordinates_bc");
+    VectorFieldType& mesh_displacement_bc = meta.declare_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "mesh_displacement_bc");
+    VectorFieldType& mesh_velocity_bc = meta.declare_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "mesh_velocity_bc");
     for (auto part: partVec_) {
         stk::mesh::put_field_on_mesh(
-            mesh_displacement, *part, meta.spatial_dimension(), nullptr);
+            coordinates_bc, *part, meta.spatial_dimension(), nullptr);
         stk::mesh::put_field_on_mesh(
-            mesh_velocity, *part, meta.spatial_dimension(), nullptr);
+            mesh_displacement_bc, *part, meta.spatial_dimension(), nullptr);
+        stk::mesh::put_field_on_mesh(
+            mesh_velocity_bc, *part, meta.spatial_dimension(), nullptr);
     }
 }
 
@@ -92,14 +96,15 @@ void HOSWaves::run()
     const stk::mesh::Selector sel = stk::mesh::selectUnion(partVec_);
     auto& bkts = bulk.get_buckets(stk::topology::NODE_RANK, sel);
 
-
-    auto* mesh_displacement = meta.get_field<VectorFieldType>(
-        stk::topology::NODE_RANK, "mesh_displacement");
-    auto* mesh_velocity = meta.get_field<VectorFieldType>(
-        stk::topology::NODE_RANK, "mesh_velocity");
+    auto* coordinates_bc = meta.get_field<VectorFieldType>(
+        stk::topology::NODE_RANK,"coordinates_bc");
+    auto* mesh_displacement_bc = meta.get_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "mesh_displacement_bc");
+    auto* mesh_velocity_bc = meta.get_field<VectorFieldType>(
+        stk::topology::NODE_RANK, "mesh_velocity_bc");
     
     pinfo.info() << "Writing time-history file = " << output_db_ << std::endl;
-    std::set<std::string> outfields{"mesh_displacement","mesh_velocity"};
+    std::set<std::string> outfields{"coordinates_bc","mesh_displacement_bc","mesh_velocity_bc"};
     double time, x,y,eta,phiS;
     mesh_.write_timesteps(
         output_db_, numSteps_, outfields,
@@ -114,15 +119,13 @@ void HOSWaves::run()
                 std::cerr<<time<<std::endl;
                 for (auto b: bkts) {
                     for (auto node: *b) {
-                    double* disp = stk::mesh::field_data(*mesh_displacement, node);
-                    double* vel = stk::mesh::field_data(*mesh_velocity, node);
+                    double* xyz = stk::mesh::field_data(*coordinates_bc,node);
+                    double* disp = stk::mesh::field_data(*mesh_displacement_bc, node);
+                    double* vel = stk::mesh::field_data(*mesh_velocity_bc, node);
                     waves >> x >> y >> eta >> phiS;
-                    disp[0] = 0.;
-                    disp[1] = 0.;
-                    disp[2] = eta;
-                    vel[0]=0.;
-                    vel[1]=0.;
-                    vel[2]=0.;
+                    xyz[0]=x; xyz[1]=y; xyz[2]=0;
+                    disp[0] = 0.; disp[1] = 0.; disp[2] = eta;
+                    vel[0]=0.; vel[1]=0.; vel[2]=0.;
                     }
                 }
             return time;
