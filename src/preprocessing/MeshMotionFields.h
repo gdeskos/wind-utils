@@ -50,14 +50,14 @@ private:
 
     stk::mesh::PartVector bc_parts_;
 
-    std::vector<double> xs_; 
-    std::vector<double> ys_;
-    std::vector<double> etas_;
-    std::vector<double> phis_;
+    std::vector<std::vector<double>> xs_; 
+    std::vector<std::vector<double>> ys_;
+    std::vector<std::vector<double>> etas_;
+    std::vector<std::vector<double>> phis_;
 
-    double length_; 
-    double width_;
-    double height_;
+    double Lx_; 
+    double Ly_;
+    double Lz_;
 
     //! X dimension for reading the file
     int Nx_;
@@ -65,9 +65,6 @@ private:
     //! Y dimension for reading the file
     int Ny_;
 
-    //! Dimensionality of the mesh
-    int ndim_;
- 
     //! Exponent for vertical dampening
     double n_exp_;
      
