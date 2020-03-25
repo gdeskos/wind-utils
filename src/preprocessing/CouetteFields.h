@@ -136,14 +136,14 @@ private:
     //! Skin friction Reynolds number
     double Re_tau_;
 
-		//! Reference velocity at top wall
-		double U0_;
+	//! Reference velocity at top wall
+	double U0_;
 
     //! Reference temperature at top wall
-		double T0_;
+	double T0_;
 
-		//! Reference Richardson number 
-		double Ri_;
+	//! Reference Richardson number 
+	double Ri_;
 
     //! Skin friction velocity
     double utau_;
@@ -157,7 +157,7 @@ private:
     //! Seed for RNG
     const int seed_ = 2864;
 
-		//! Some parameters for the initial perturbations
+	//! Some parameters for the initial perturbations
     const double epsilon_=0.1;
   
     //! Wavenumber of sinusoidal perturbation for u
