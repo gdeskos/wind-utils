@@ -210,17 +210,17 @@ void CouetteFields::init_velocity_field()
         double* vel = stk::mesh::field_data(*velocity, fbkt);
 
         for (size_t in=0; in < fbkt.size(); in++) {
-	  const double x = xyz[in*ndim_ + 0];
-	  const double y = xyz[in*ndim_ + 1];
-	  const double z = xyz[in*ndim_ + 2];
+	        const double x = xyz[in*ndim_ + 0];
+	        const double y = xyz[in*ndim_ + 1];
+	        const double z = xyz[in*ndim_ + 2];
 
-	  const double pert_u = u_perturbation(x,y,z);
-	  const double pert_v = v_perturbation(x,y,z);
-	  const double pert_w = w_perturbation(x,y,z);
+	        const double pert_u = u_perturbation(x,y,z);
+	        const double pert_v = v_perturbation(x,y,z);
+	        const double pert_w = w_perturbation(x,y,z);
 
-	  vel[in * ndim_ + 0] = umean(z)+pert_u;
-	  vel[in * ndim_ + 1] = pert_v;
-	  vel[in * ndim_ + 2] = pert_w;
+	        vel[in * ndim_ + 0] = umean(z)+pert_u;
+	        vel[in * ndim_ + 1] = pert_v;
+	        vel[in * ndim_ + 2] = pert_w;
         }
     }
 }

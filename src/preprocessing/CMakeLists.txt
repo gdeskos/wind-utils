@@ -13,6 +13,7 @@ add_executable(nalu_preprocess
   TranslateMesh.cpp
   InflowHistory.cpp
   HOSWaves.cpp
+  MeshMotionFields.cpp
 
   PreProcessDriver.cpp
   nalu_preprocess.cpp
