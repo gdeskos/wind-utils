@@ -63,7 +63,7 @@ void MeshMotionFields::load(const YAML::Node& node)
     Ny_ = node["Ny"].as<int>();
     n_exp_=node["damping_exponent"].as<int>(); 
     waves_filename_ = node["waves_file"].as<std::string>();
-    output_db_      = node["time_history_db"].as<std::string>();
+    output_db_      = node["output_db"].as<std::string>();
     numSteps_       = node["num_timesteps"].as<int>();
 }
 
@@ -86,8 +86,10 @@ void MeshMotionFields::initialize()
             mesh_velocity, *part, meta.spatial_dimension(), nullptr);
     }
     // Initialize the vectors that read into the .dat files
-    xs_.resize(Nx_,Ny_); ys_.resize(Nx_,Ny_);
-    etas_.resize(Nx_,Ny_); phis_.resize(Nx_,Ny_);
+    xs_.resize  (Nx_,std::vector<double>(Ny_,1));
+    ys_.resize  (Nx_,std::vector<double>(Ny_,1));
+    etas_.resize(Nx_,std::vector<double>(Ny_,1)); 
+    phis_.resize(Nx_,std::vector<double>(Ny_,1));
 
 }
 
@@ -105,14 +107,16 @@ void MeshMotionFields::run()
  
     // Computing the box dimensions
     auto bbox = mesh_.calc_bounding_box(sel,false);
-    length_ = bbox.get_x_max() - bbox.get_x_min();
-    width_ = bbox.get_y_max() - bbox.get_y_min();
-    height_ = bbox.get_z_max() - bbox.get_z_min();
-    
+    Lx_ = bbox.get_x_max() - bbox.get_x_min();
+    Ly_ = bbox.get_y_max() - bbox.get_y_min();
+    Lz_ = bbox.get_z_max() - bbox.get_z_min();
+    double dx_=Lx_/Nx_;
+    double dy_=Ly_/Ny_;
+
     VectorFieldType* coords = meta.get_field<VectorFieldType>(
         stk::topology::NODE_RANK, "coordinates");
     VectorFieldType* mesh_disp = meta.get_field<VectorFieldType>(
-        stk::topology::NODE_RANK, "mesh_diplacement");
+        stk::topology::NODE_RANK, "mesh_displacement");
     VectorFieldType* mesh_vel = meta.get_field<VectorFieldType>(
         stk::topology::NODE_RANK, "mesh_velocity");
     
@@ -129,14 +133,14 @@ void MeshMotionFields::run()
                     "HOSWaves:: Error opening file: " + waves_filename_);
                 waves >> time; 
                 std::cerr<<time<<std::endl;
-                for (int i=0; i<Nx_;i++){
-                    for (int j=0; j<Ny_; j++){
+                for (int j=0; j<Ny_; j++){
+                    for (int i=0; i<Nx_;i++){
                         waves>>xs>>ys>>etas>>phis;
                         //std::cerr<<xs<<ys<<etas<<phis<<std::endl;
-                        //xs_[i][j]=xs;
-                        //ys_[i][j]=ys;
-                        //etas_[i][j]=etas;
-                        //phis_[i][j]=phisz;
+                        xs_[i][j]=xs;
+                        ys_[i][j]=ys;
+                        etas_[i][j]=etas;
+                        phis_[i][j]=phis;
                     }
                 }
                 
@@ -144,17 +148,18 @@ void MeshMotionFields::run()
                     for (auto node: *b) {
                         double* xyz = stk::mesh::field_data(*coords,node);
                         double* disp = stk::mesh::field_data(*mesh_disp, node);
-                        double* vel = stk::mesh::field_data(*mesh_vel, node); 
-                        disp[0]=-time;
-                        disp[1]=-2*time;
-                        disp[2]=-3*time;
-                        //vel[0]=time;
-                        //vel[1]=2*time;
-                        //vel[2]=3*time;
+                        double* vel = stk::mesh::field_data(*mesh_vel, node);
+                        int i = std::floor(xyz[0] / dx_);
+                        int j = std::floor(xyz[1] / dy_);
+                        
+                        disp[0]=0;
+                        disp[1]=0;
+                        disp[2]=etas_[i][j]*std::pow(1-xyz[2]/Lz_,n_exp_);
+                        vel[0]=0;
+                        vel[1]=0;
+                        vel[2]=0;
                     }
                 }
-    //                const int i = std::floor(x / dx);
-    //                const int j = std::floor(y / dy);
             return time;
         });
     pinfo.info() << numSteps_ << " timesteps written successfully" << std::endl;
