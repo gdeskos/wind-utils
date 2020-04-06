@@ -89,7 +89,9 @@ void MeshMotionFields::initialize()
     xs_.resize  (Nx_,std::vector<double>(Ny_,1));
     ys_.resize  (Nx_,std::vector<double>(Ny_,1));
     etas_.resize(Nx_,std::vector<double>(Ny_,1)); 
-    phis_.resize(Nx_,std::vector<double>(Ny_,1));
+    us_.resize(Nx_,std::vector<double>(Ny_,1));
+    vs_.resize(Nx_,std::vector<double>(Ny_,1));
+    ws_.resize(Nx_,std::vector<double>(Ny_,1));
 
 }
 
@@ -121,7 +123,7 @@ void MeshMotionFields::run()
         stk::topology::NODE_RANK, "mesh_velocity");
     
     std::set<std::string> outfields{"mesh_displacement","mesh_velocity"};
-    double time, xs,ys,etas, phis;
+    double time, xs,ys,etas,us,vs,ws;
     mesh_.write_timesteps(
         output_db_, numSteps_, outfields,
         [&](int itime) { 
@@ -132,18 +134,17 @@ void MeshMotionFields::run()
                     throw std::runtime_error(
                     "HOSWaves:: Error opening file: " + waves_filename_);
                 waves >> time; 
-                std::cerr<<time<<std::endl;
                 for (int j=0; j<Ny_; j++){
                     for (int i=0; i<Nx_;i++){
-                        waves>>xs>>ys>>etas>>phis;
-                        //std::cerr<<xs<<ys<<etas<<phis<<std::endl;
+                        waves>>xs>>ys>>etas>>us>>vs>>ws;
                         xs_[i][j]=xs;
                         ys_[i][j]=ys;
                         etas_[i][j]=etas;
-                        phis_[i][j]=phis;
+                        us_[i][j]=us;
+                        vs_[i][j]=vs;
+                        ws_[i][j]=ws;
                     }
                 }
-                
                 for (auto b: bkts) {
                     for (auto node: *b) {
                         double* xyz = stk::mesh::field_data(*coords,node);
@@ -151,13 +152,15 @@ void MeshMotionFields::run()
                         double* vel = stk::mesh::field_data(*mesh_vel, node);
                         int i = std::floor(xyz[0] / dx_);
                         int j = std::floor(xyz[1] / dy_);
-                        
+                        if (i>=Nx_) i=Nx_-1;
+                        if (j>=Ny_) j=Ny_-1;
+                        // Perhaps do an interpolation here        
                         disp[0]=0;
                         disp[1]=0;
                         disp[2]=etas_[i][j]*std::pow(1-xyz[2]/Lz_,n_exp_);
-                        vel[0]=0;
-                        vel[1]=0;
-                        vel[2]=0;
+                        vel[0]=us_[i][j];
+                        vel[1]=vs_[i][j];
+                        vel[2]=ws_[i][j];
                     }
                 }
             return time;

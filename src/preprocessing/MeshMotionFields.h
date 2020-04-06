@@ -53,7 +53,9 @@ private:
     std::vector<std::vector<double>> xs_; 
     std::vector<std::vector<double>> ys_;
     std::vector<std::vector<double>> etas_;
-    std::vector<std::vector<double>> phis_;
+    std::vector<std::vector<double>> us_;
+    std::vector<std::vector<double>> vs_;
+    std::vector<std::vector<double>> ws_;
 
     double Lx_; 
     double Ly_;
