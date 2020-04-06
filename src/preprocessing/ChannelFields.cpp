@@ -122,8 +122,8 @@ void ChannelFields::setup_parameters()
     stk::mesh::Selector fluid_union = stk::mesh::selectUnion(fluid_parts_);
     auto bbox = mesh_.calc_bounding_box(fluid_union,false);
     length_ = bbox.get_x_max() - bbox.get_x_min();
-    height_ = bbox.get_y_max() - bbox.get_y_min();
-    width_ = bbox.get_z_max() - bbox.get_z_min();
+    height_ = bbox.get_z_max() - bbox.get_z_min();
+    width_ = bbox.get_y_max() - bbox.get_y_min();
     const double delta = 0.5 * height_;
     utau_ = Re_tau_ * viscosity_ / delta;
     const double yph = height_ * utau_ / viscosity_;
@@ -174,9 +174,9 @@ void ChannelFields::init_velocity_field()
 	  const double pert_u = u_perturbation(x,y,z);
 	  const double pert_w = w_perturbation(x,y,z);
 
-	  vel[in * ndim_ + 0] = utau_ *(1-(width_/2.-z)*(width_/2.-z)) + 0.1*utau_*pert_u;//* (reichardt(y) + pert_u);
-	  vel[in * ndim_ + 1] = 0.1*utau_ * pert_w;
-	  vel[in * ndim_ + 2] = 0.1*utau_ * pert_w;
+	  vel[in * ndim_ + 0] = utau_*(reichardt(z) + pert_u);
+	  vel[in * ndim_ + 1] = utau_ * pert_w;
+	  vel[in * ndim_ + 2] = 0.;
         }
     }
 }
