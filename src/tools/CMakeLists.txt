@@ -1,3 +1,3 @@
 
 add_subdirectory(boxturb)
-add_subdirectory(turbsim_netcdf)
+#add_subdirectory(turbsim_netcdf)

@@ -79,8 +79,11 @@ private:
 
     void setup_parameters();
 
-    //! umean with a Reichardt-like function
+    //! umean with a linear function
     double umean(const double z);
+    
+    //! vmean with a linear function
+    double vmean(const double z);
 
     //! Perturbation function for u
     double u_perturbation(const double x, const double y, const double z);
@@ -136,14 +139,17 @@ private:
     //! Skin friction Reynolds number
     double Re_tau_;
 
-		//! Reference velocity at top wall
-		double U0_;
+	//! Reference x-direction velocity at top wall
+	double U0_;
+
+	//! Reference y-direction velocity at top wall
+    double V0_;
 
     //! Reference temperature at top wall
-		double T0_;
+	double T0_;
 
-		//! Reference Richardson number 
-		double Ri_;
+	//! Reference Richardson number 
+	double Ri_;
 
     //! Skin friction velocity
     double utau_;
@@ -157,7 +163,7 @@ private:
     //! Seed for RNG
     const int seed_ = 2864;
 
-		//! Some parameters for the initial perturbations
+	//! Some parameters for the initial perturbations
     const double epsilon_=0.1;
   
     //! Wavenumber of sinusoidal perturbation for u

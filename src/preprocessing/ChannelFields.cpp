@@ -122,8 +122,8 @@ void ChannelFields::setup_parameters()
     stk::mesh::Selector fluid_union = stk::mesh::selectUnion(fluid_parts_);
     auto bbox = mesh_.calc_bounding_box(fluid_union,false);
     length_ = bbox.get_x_max() - bbox.get_x_min();
-    height_ = bbox.get_y_max() - bbox.get_y_min();
-    width_ = bbox.get_z_max() - bbox.get_z_min();
+    height_ = bbox.get_z_max() - bbox.get_z_min();
+    width_ = bbox.get_y_max() - bbox.get_y_min();
     const double delta = 0.5 * height_;
     utau_ = Re_tau_ * viscosity_ / delta;
     const double yph = height_ * utau_ / viscosity_;
@@ -138,14 +138,14 @@ double ChannelFields::reichardt(const double y)
 
 double ChannelFields::u_perturbation(const double x, const double, const double z)
 {
-    const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * z) * sin(k_pert_u_ * M_PI / length_ * x);
+    const double pert_u = 1.;//a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * z) * sin(k_pert_u_ * M_PI / length_ * x);
     const double rand_u = a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_u * rand_u;
 }
 
 double ChannelFields::w_perturbation(const double x, const double, const double z)
 {
-    const double pert_w = a_pert_w_ * sin(k_pert_w_ * M_PI / length_ * x)  * sin(k_pert_w_ * M_PI / width_ * z);
+    const double pert_w = 1.;//a_pert_w_ * sin(k_pert_w_ * M_PI / length_ * x)  * sin(k_pert_w_ * M_PI / width_ * z);
     const double rand_w = a_rand_w_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_w * rand_w;
 }
@@ -174,9 +174,9 @@ void ChannelFields::init_velocity_field()
 	  const double pert_u = u_perturbation(x,y,z);
 	  const double pert_w = w_perturbation(x,y,z);
 
-	  vel[in * ndim_ + 0] = utau_ * (reichardt(y) + pert_u);
-	  vel[in * ndim_ + 1] = 0.0;
-	  vel[in * ndim_ + 2] = utau_ * pert_w;
+	  vel[in * ndim_ + 0] = utau_*(reichardt(z) + pert_u);
+	  vel[in * ndim_ + 1] = utau_ * pert_w;
+	  vel[in * ndim_ + 2] = 0.;
         }
     }
 }
