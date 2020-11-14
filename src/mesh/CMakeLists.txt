@@ -29,7 +29,7 @@ add_executable(abl_mesh
 
 add_executable(slice_mesh
     Slice.cpp
-    Slice_mesh.cpp
+    slice_mesh.cpp
   )
 
 target_link_libraries(abl_mesh
