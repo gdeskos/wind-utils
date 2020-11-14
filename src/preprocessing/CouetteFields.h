@@ -79,8 +79,11 @@ private:
 
     void setup_parameters();
 
-    //! umean with a Reichardt-like function
+    //! umean with a linear function
     double umean(const double z);
+    
+    //! vmean with a linear function
+    double vmean(const double z);
 
     //! Perturbation function for u
     double u_perturbation(const double x, const double y, const double z);
@@ -136,8 +139,11 @@ private:
     //! Skin friction Reynolds number
     double Re_tau_;
 
-	//! Reference velocity at top wall
+	//! Reference x-direction velocity at top wall
 	double U0_;
+
+	//! Reference y-direction velocity at top wall
+    double V0_;
 
     //! Reference temperature at top wall
 	double T0_;

@@ -38,7 +38,8 @@ CouetteFields::CouetteFields(
     C_(0.0),
     Re_tau_(0.0),
     viscosity_(0.0),
-		U0_(0.0),
+	U0_(1.0),
+	V0_(0.0),
     Ri_(0.0),
     T0_(0.0)
 {
@@ -126,6 +127,11 @@ void CouetteFields::load_velocity_info(const YAML::Node& couette)
     U0_ = couette["U0"].as<double>();
   else
     throw std::runtime_error("CouetteFields: missing mandatory U0 parameter");
+  
+  if (couette["V0"])
+    V0_ = couette["V0"].as<double>();
+  else
+    throw std::runtime_error("CouetteFields: missing mandatory V0 parameter");
 
   if (couette["viscosity"])
     viscosity_ = couette["viscosity"].as<double>();
@@ -169,6 +175,12 @@ double CouetteFields::umean(const double z)
 {
 		return z/height_*U0_;
 }
+
+double CouetteFields::vmean(const double z)
+{
+		return z/height_*V0_;
+}
+
 
 double CouetteFields::u_perturbation(const double x, const double y, const double z)
 {
@@ -219,8 +231,8 @@ void CouetteFields::init_velocity_field()
 	        const double pert_w = w_perturbation(x,y,z);
 
 	        vel[in * ndim_ + 0] = umean(z)+pert_u;
-	        vel[in * ndim_ + 1] = U0_*pert_v;
-	        vel[in * ndim_ + 2] = U0_*pert_w;
+	        vel[in * ndim_ + 1] = vmean(z)+pert_v;
+	        vel[in * ndim_ + 2] = std::sqrt(U0_*U0_+V0_*V0_)*pert_w;
         }
     }
 }
