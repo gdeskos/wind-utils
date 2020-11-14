@@ -219,8 +219,8 @@ void CouetteFields::init_velocity_field()
 	        const double pert_w = w_perturbation(x,y,z);
 
 	        vel[in * ndim_ + 0] = umean(z)+pert_u;
-	        vel[in * ndim_ + 1] = pert_v;
-	        vel[in * ndim_ + 2] = pert_w;
+	        vel[in * ndim_ + 1] = U0_*pert_v;
+	        vel[in * ndim_ + 2] = U0_*pert_w;
         }
     }
 }

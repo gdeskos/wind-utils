@@ -124,6 +124,7 @@ void MeshMotionFields::run()
     
     std::set<std::string> outfields{"mesh_displacement","mesh_velocity"};
     double time, xs,ys,etas,us,vs,ws;
+    double eps = std::numeric_limits<double>::epsilon();
     mesh_.write_timesteps(
         output_db_, numSteps_, outfields,
         [&](int itime) { 
@@ -158,9 +159,14 @@ void MeshMotionFields::run()
                         disp[0]=0;
                         disp[1]=0;
                         disp[2]=etas_[i][j]*std::pow(1-xyz[2]/Lz_,n_exp_);
+                        if(xyz[2]<eps){
                         vel[0]=us_[i][j];
                         vel[1]=vs_[i][j];
                         vel[2]=ws_[i][j];
+                        }else{
+                        vel[0]=0.; vel[1]=0.; vel[2]=0.;
+                        }
+
                     }
                 }
             return time;
