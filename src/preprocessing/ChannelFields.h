@@ -141,16 +141,16 @@ private:
     const int k_pert_w_ = 16;
 
     //! Amplitude of sinusoidal perturbation for u
-    const int a_pert_u_ = 10;
+    const int a_pert_u_ = 5;
 
     //! Amplitude of sinusoidal perturbation for w
-    const int a_pert_w_ = 10;
+    const int a_pert_w_ = 5;
 
     //! Amplitude of random perturbation for u
-    const double a_rand_u_ = 5;
+    //const double a_rand_u_ = 0.1;
 
-    //! Amplitude of random perturbation for w
-    const double a_rand_w_ = 5;
+    ////! Amplitude of random perturbation for w
+    //const double a_rand_w_ = 0.1;
 };
 
 }

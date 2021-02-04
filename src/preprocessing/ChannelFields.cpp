@@ -139,14 +139,14 @@ double ChannelFields::reichardt(const double y)
 double ChannelFields::u_perturbation(const double x, const double, const double z)
 {
     const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * z) * sin(k_pert_u_ * M_PI / length_ * x);
-    const double rand_u = a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
+    const double rand_u = 1.;//a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_u * rand_u;
 }
 
 double ChannelFields::w_perturbation(const double x, const double, const double z)
 {
     const double pert_w = a_pert_w_ * sin(k_pert_w_ * M_PI / length_ * x)  * sin(k_pert_w_ * M_PI / width_ * z);
-    const double rand_w = a_rand_w_ * (2. * (double)rand() / RAND_MAX - 1);
+    const double rand_w = 1.;//a_rand_w_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_w * rand_w;
 }
 
