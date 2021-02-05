@@ -132,22 +132,30 @@ void ChannelFields::setup_parameters()
 
 double ChannelFields::reichardt(const double y)
 {
-    const double yp = std::min(y, height_ - y) * utau_ / viscosity_;
-    return (1.0/kappa_ * log(1.0 + kappa_ * yp)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- yp / 11.0) - yp / 11.0 * exp(- yp / 3));
+    const double yp = height_/2.-y;//std::min(y, height_ - y) * utau_ / viscosity_;
+    return 0.1*(1-yp*yp)*utau_/viscosity_;//(1.0/kappa_ * log(1.0 + kappa_ * yp)) + (C_ - log(kappa_) / kappa_) * (1 - exp(- yp / 11.0) - yp / 11.0 * exp(- yp / 3));
 }
 
-double ChannelFields::u_perturbation(const double x, const double, const double z)
+double ChannelFields::u_perturbation(const double x, const double y, const double z)
 {
-    const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * z) * sin(k_pert_u_ * M_PI / length_ * x);
-    const double rand_u = 1.;//a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
-    return pert_u * rand_u;
+    //const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * y) * sin(k_pert_u_ * M_PI / length_ * x);
+    const double pert_u = 0.5*epsilon_*length_*std::sin(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double rand_u = 0;//a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_u + rand_u;
 }
 
-double ChannelFields::w_perturbation(const double x, const double, const double z)
+double ChannelFields::v_perturbation(const double x, const double y, const double z)
 {
-    const double pert_w = a_pert_w_ * sin(k_pert_w_ * M_PI / length_ * x)  * sin(k_pert_w_ * M_PI / width_ * z);
-    const double rand_w = 1.;//a_rand_w_ * (2. * (double)rand() / RAND_MAX - 1);
-    return pert_w * rand_w;
+    const double pert_v = -0.5*epsilon_*width_*std::cos(2*M_PI/length_*x)*std::sin(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double rand_v = 0.;//a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_v + rand_v;
+}
+
+double ChannelFields::w_perturbation(const double x, const double y, const double z)
+{
+    const double pert_w = 0.;//epsilon_*height_*std::cos(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y);
+    const double rand_w = 0.;//a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
+    return pert_w + rand_w;
 }
 
 void ChannelFields::init_velocity_field()
@@ -172,11 +180,12 @@ void ChannelFields::init_velocity_field()
 	  const double z = xyz[in*ndim_ + 2];
 
 	  const double pert_u = u_perturbation(x,y,z);
+	  const double pert_v = v_perturbation(x,y,z);
 	  const double pert_w = w_perturbation(x,y,z);
 
 	  vel[in * ndim_ + 0] = utau_*(reichardt(z) + pert_u);
-	  vel[in * ndim_ + 1] = utau_ * pert_w;
-	  vel[in * ndim_ + 2] = 0.;
+	  vel[in * ndim_ + 1] = utau_ * pert_v;
+	  vel[in * ndim_ + 2] = utau_ * pert_w;
         }
     }
 }

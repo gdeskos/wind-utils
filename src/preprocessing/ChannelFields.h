@@ -80,6 +80,9 @@ private:
     //! Perturbation function for u
     double u_perturbation(const double x, const double y, const double z);
 
+    //! Perturbation function for v
+    double v_perturbation(const double x, const double y, const double z);
+    
     //! Perturbation function for w
     double w_perturbation(const double x, const double y, const double z);
 
@@ -134,23 +137,9 @@ private:
     //! Seed for RNG
     const int seed_ = 2864;
 
-    //! Wavenumber of sinusoidal perturbation for u
-    const int k_pert_u_ = 16;
-
-    //! Wavenumber of sinusoidal perturbation for w
-    const int k_pert_w_ = 16;
-
-    //! Amplitude of sinusoidal perturbation for u
-    const int a_pert_u_ = 5;
-
-    //! Amplitude of sinusoidal perturbation for w
-    const int a_pert_w_ = 5;
-
-    //! Amplitude of random perturbation for u
-    //const double a_rand_u_ = 0.1;
-
-    ////! Amplitude of random perturbation for w
-    //const double a_rand_w_ = 0.1;
+	//! Some parameters for the initial perturbations
+    const double epsilon_=1;
+    
 };
 
 }
