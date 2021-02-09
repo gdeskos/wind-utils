@@ -184,14 +184,16 @@ double CouetteFields::vmean(const double z)
 double CouetteFields::u_perturbation(const double x, const double y, const double z)
 {
     //const double pert_u = a_pert_u_ * sin(k_pert_u_ * M_PI / width_ * y) * sin(k_pert_u_ * M_PI / length_ * x);
-    const double pert_u = 0.5*epsilon_*length_*std::sin(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double vel_mag= std::pow(U0_*U0_+V0_*V0_,0.5);
+    const double pert_u = 0.5*vel_mag*epsilon_*length_*std::sin(2*M_PI/length_*x)*std::cos(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
     const double rand_u = 0;//a_rand_u_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_u + rand_u;
 }
 
 double CouetteFields::v_perturbation(const double x, const double y, const double z)
 {
-    const double pert_v = -0.5*epsilon_*width_*std::cos(2*M_PI/length_*x)*std::sin(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
+    const double vel_mag= std::pow(U0_*U0_+V0_*V0_,0.5);
+    const double pert_v = -0.5*vel_mag*epsilon_*width_*std::cos(2*M_PI/length_*x)*std::sin(2*M_PI/width_*y)*std::sin(2*M_PI/height_*z);
     const double rand_v = 0.;//a_rand_v_ * (2. * (double)rand() / RAND_MAX - 1);
     return pert_v + rand_v;
 }
